@@ -202,7 +202,7 @@ public class SettingsActivity extends AppCompatActivity {
             }
 
             @Override
-            public void onCancelled(DatabaseError databaseError) {
+            public void onCancelled(@NotNull DatabaseError databaseError) {
                 Log.d(TAG, "databaseError");
             }
         });
@@ -480,9 +480,10 @@ public class SettingsActivity extends AppCompatActivity {
     private void goToMainActivity(){
         Intent intent = new Intent(SettingsActivity.this, MainActivity.class);
         startActivity(intent);
+        _progressBar.setVisibility(View.GONE);
         finish();
 
-        _progressBar.setVisibility(View.GONE);
+
 
     }
 

@@ -2,7 +2,12 @@ package com.your.mychat;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentPagerAdapter;
 import androidx.preference.PreferenceManager;
+import androidx.viewpager.widget.ViewPager;
+import androidx.viewpager2.widget.ViewPager2;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -11,12 +16,13 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.Toast;
 
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
+import com.google.android.material.tabs.TabLayout;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
+import com.your.mychat.adapter.Adapter;
 import com.your.mychat.login.LoginActivity;
 
 /**
@@ -24,6 +30,11 @@ import com.your.mychat.login.LoginActivity;
  *
  * */
 public class MainActivity extends AppCompatActivity {
+
+
+    private TabLayout _tabLayout;
+    private ViewPager _viewPager;
+
     private FirebaseAuth _firebaseAuth;
     private FirebaseUser _firebaseUser;
     private DatabaseReference _databaseReference;
@@ -31,13 +42,17 @@ public class MainActivity extends AppCompatActivity {
     private Uri _userPhoto;
     private String intentUserName;
     private SharedPreferences _SharedPreferences;
-
      Uri intentUserPhoto;
+
+     // for onBackPressed method
+    private boolean _doubleBackPressed = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+
         _SharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
 
         // Initialize Firebase Auth
@@ -61,8 +76,82 @@ public class MainActivity extends AppCompatActivity {
         // Parameter in Intent, sent from MainActivity
         intentUserName = intent.getStringExtra("userName");
 
+        //init UI TabLayout
+        _tabLayout=findViewById(R.id.tabMain);
+        _viewPager=findViewById(R.id.vpMain);
+        //init Adapter and viewPager
+        set_viewPager();
 
     }
+    //-----------------------------------------------------------------------------------------------
+    /**
+     * set_viewPager is a method to work with Tablayout and Adapter
+     *
+     * */
+    private void set_viewPager(){
+
+        _tabLayout.addTab(_tabLayout.newTab().setCustomView(R.layout.tab_chat));
+        _tabLayout.addTab(_tabLayout.newTab().setCustomView(R.layout.tab_requests));
+        _tabLayout.addTab(_tabLayout.newTab().setCustomView(R.layout.tab_find_friends));
+
+        _tabLayout.setTabGravity(TabLayout.GRAVITY_FILL);
+
+
+        Adapter adapter = new Adapter(getSupportFragmentManager()
+                ,FragmentPagerAdapter.BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT
+                ,_tabLayout);
+
+        _viewPager.setAdapter(adapter);
+
+        _tabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
+            @Override
+            public void onTabSelected(TabLayout.Tab tab) {
+                _viewPager.setCurrentItem(tab.getPosition());
+            }
+
+            @Override
+            public void onTabUnselected(TabLayout.Tab tab) {
+
+            }
+
+            @Override
+            public void onTabReselected(TabLayout.Tab tab) {
+            }
+        });
+
+        _viewPager.addOnPageChangeListener(new TabLayout.TabLayoutOnPageChangeListener(_tabLayout));
+    }
+
+   //-----------------------------------------------------------------------------------------------
+
+
+    @Override
+    public void onBackPressed() {
+        //super.onBackPressed();
+        if(_tabLayout.getSelectedTabPosition() > 0)
+        {
+
+            _tabLayout.selectTab(_tabLayout.getTabAt(0));
+
+        }
+        else
+        {
+            if (_doubleBackPressed)
+            { finishAffinity();}
+
+            else {
+                _doubleBackPressed = true;
+              Toast.makeText(this, getString(R.string.press_back_again)
+                      ,Toast.LENGTH_SHORT).show();
+                 //wait 2 seconds to press Back
+                  android.os.Handler handler =new android.os.Handler();
+                  handler.postDelayed((Runnable) () -> _doubleBackPressed = false,2000);
+
+            }
+
+        }
+    }
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.main_menu, menu);
