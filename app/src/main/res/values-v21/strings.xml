@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="login">Login</string>
+    <string name="enter_password">Enter Password</string>
+    <string name="reset_password">Reset Password</string>
+    <string name="enter_name">Enter name</string>
+    <string name="signup">SignUp</string>
+    <string name="confirm_password">Confirm Password</string>
+    <string name="user_created_successfully">User created successfully</string>
+    <string name="Sign_up_failed">Sign up failed : %1$s</string>
+    <string name="don_t_have_account">Don\'t have account?</string>
+    <string name="sign_up_here">Sign Up</string>
+    <string name="failed_to_update_username">Failed to update profile : %1$s</string>
+    <string name="access_permision_is_required">Access permission is required</string>
+    <string name="search">Search</string>
+    <string name="account_settings">Account settings</string>
+    <string name="sign_out">Sign out</string>
+    <string name="age">Age</string>
+    <string name="mute_notifications">Mute notifications</string>
+    <string name="edit_age">Edit Age</string>
+    <string name="gender">Gender</string>
+    <string name="save">Save</string>
+    <string name="name">Name</string>
+    <string name="editname">EditName</string>
+    <string name="change_picture">Change Picture</string>
+    <string name="user_photo_removed">removePhoto() , user photo is removed</string>
+    <string name="users_photo_is_removed_sussesfully">user photo is removed : Sussesfully</string>
+    <string name="user_photo_remove_failure">user photo is not removed : Failure</string>
+    <string name="user_profile_was_udated">user profile is Updated : Successfully</string>
+    <string name="change_password">Change Password</string>
+    <string name="your_pass_was_changed">Your password was chanched!</string>
+    <string name="something_went_wrong">Something went wrong : %1$s</string>
+    <string name="reset_password_instruction">Reset password instructions has been sent on your email : %1$s</string>
+    <string name="ok">Ok</string>
+    <string name="email_sent_failed">Faile to send  email : %1$s</string>
+    <string name="resend_timer">Resend in : %1$s</string>
+    <string name="please_wait">Please wait..</string>
+    <string name="check_internet_connection">Check internet Connection</string>
+    <string name="close">Close</string>
+    <string name="retry">Retry</string>
+    <string name="no_internet">no internet</string>
+
+
+</resources>

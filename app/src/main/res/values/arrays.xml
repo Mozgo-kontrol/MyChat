@@ -1,0 +1,8 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Reply Preference -->
+    <string-array name="sex_array" >
+        <item>Female</item>
+        <item>Male</item>
+    </string-array>
+
+</resources>
