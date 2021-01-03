@@ -30,7 +30,7 @@ public class MainActivity extends AppCompatActivity {
     private String _username;
     private Uri _userPhoto;
     private String intentUserName;
-   // private String intentUserName;
+
     private SharedPreferences _SharedPreferences;
 
      Uri intentUserPhoto;
