@@ -24,7 +24,6 @@ import com.your.mychat.login.LoginActivity;
  *
  * */
 public class MainActivity extends AppCompatActivity {
-    private FirebaseAuth _firebaseAuth1;
     private FirebaseAuth _firebaseAuth;
     private FirebaseUser _firebaseUser;
     private DatabaseReference _databaseReference;
