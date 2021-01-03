@@ -122,7 +122,7 @@ public class MainActivity extends AppCompatActivity {
         _viewPager.addOnPageChangeListener(new TabLayout.TabLayoutOnPageChangeListener(_tabLayout));
     }
 
-   //-----------------------------------------------------------------------------------------------
+   //---------------------------------------------------------------------------------------------
 
 
     @Override
