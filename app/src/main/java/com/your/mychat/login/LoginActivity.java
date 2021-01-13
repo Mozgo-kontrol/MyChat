@@ -26,9 +26,9 @@ import java.util.Objects;
  **/
 public class LoginActivity extends Activity {
 
-    private final String TAG = "SignupActivity";
+    private final String TAG = "LoginActivity";
     private boolean isEmailverified = false;
-
+    //local variable
     //local variable
     private TextInputEditText _etEmail, _etPassword;
     Button _btnLogin;
