@@ -7,7 +7,7 @@ import androidx.fragment.app.FragmentPagerAdapter;
 
 import com.google.android.material.tabs.TabLayout;
 import com.your.mychat.ChatFragment;
-import com.your.mychat.FindFriendsFragment;
+import com.your.mychat.findfriends.FindFriendsFragment;
 import com.your.mychat.RequestsFragment;
 /**
  * made by Igor Ferbert 3.01.2021

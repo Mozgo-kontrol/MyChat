@@ -75,7 +75,6 @@ public class SignupActivity extends AppCompatActivity {
         _firebaseAuth = FirebaseAuth.getInstance();
         //initial the Storage reference
         _fileStorage = FirebaseStorage.getInstance().getReference();
-
         //A View for progressBar
         _progressBar=findViewById(R.id.progressBar);
     }

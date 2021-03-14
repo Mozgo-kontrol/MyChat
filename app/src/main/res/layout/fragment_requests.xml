@@ -5,6 +5,13 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".RequestsFragment">
+
+
+    <include
+        android:id="@+id/progressbar_fr"
+        layout="@layout/custom_progressbar"
+        android:visibility="gone"/>
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/tvRequests"
         android:layout_width="0dp"
