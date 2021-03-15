@@ -60,7 +60,8 @@
                     android:id="@+id/etName_signup_activity"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="@string/enter_name" />
+                    android:hint="@string/enter_name"
+                    android:maxLines="1" />
             </com.google.android.material.textfield.TextInputLayout>
 
             <com.google.android.material.textfield.TextInputLayout
@@ -75,7 +76,8 @@
                     android:id="@+id/etEmail_signup_activity"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="@string/enter_email" />
+                    android:hint="@string/enter_email"
+                    android:maxLines="1" />
             </com.google.android.material.textfield.TextInputLayout>
 
             <com.google.android.material.textfield.TextInputLayout
@@ -107,7 +109,8 @@
                     android:id="@+id/etConfirm_Password_sign_activity"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="@string/confirm_password" />
+                    android:hint="@string/confirm_password"
+                    android:maxLines="1" />
             </com.google.android.material.textfield.TextInputLayout>
 
             <Button
