@@ -27,4 +27,6 @@ public class NodeNames {
     public static final String APP_PREFERENCES_SEX = "sex"; //
     public static final String FRIEND_REQUESTS = "friendRequests";
     public static final String REQUEST_TYPE = "request_type";
+    public static final String CHATS = "Chats";
+    public static final String TIME_STAMP = "timestamp" ;
 }
