@@ -2,6 +2,7 @@ package com.your.mychat.findfriends;
 
 import android.content.Context;
 import android.net.Uri;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -57,6 +58,7 @@ public class FindFriendAdapter extends RecyclerView.Adapter<FindFriendAdapter.Fi
 
     @Override
     public void onBindViewHolder(@NonNull FindFriendViewHolder holder, int position) {
+
           FindFriendModel findfriendModel = findFriendModelList.get(position);
           holder._tv_full_Name.setText(findfriendModel.get_userName());
 

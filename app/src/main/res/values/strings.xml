@@ -80,6 +80,7 @@
     <string name="failed_to_fetch_friends_request">failed to fetch friends request %1$s</string>
     <string name="failed_to_deny_request">Failed to deny request : %1$s</string>
     <string name="failed_accept_request">Failed accept request : %1$s</string>
+    <string name="failed_to_fetch_chat_list">Failed to fetch chat list : %1$s</string>
 
 
 </resources>

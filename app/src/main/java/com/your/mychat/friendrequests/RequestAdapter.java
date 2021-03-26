@@ -62,18 +62,21 @@ public class RequestAdapter extends RecyclerView.Adapter<RequestAdapter.ReguestV
     }
 
     @Override
-    public void onBindViewHolder(@NonNull RequestAdapter.ReguestViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull ReguestViewHolder holder, int position) {
 
         RequestModel requestModel = requestModelList.get(position);
         holder._tvFullname.setText(requestModel.get_userName());
 
         StorageReference fileRef = FirebaseStorage.getInstance().getReference().child(IMAGES_FOLDER+"/"+requestModel.get_userId()+".ipg");
+        if(fileRef!=null){
 
-        fileRef.getDownloadUrl().addOnSuccessListener(uri -> Glide.with(context)
-                .load(uri)
-                .placeholder(R.drawable.default_profile)
-                .error(R.drawable.default_profile)
-                .into(holder._ivProfile));
+            fileRef.getDownloadUrl().addOnSuccessListener(uri -> Glide.with(context)
+                    .load(uri)
+                    .placeholder(R.drawable.default_profile)
+                    .error(R.drawable.default_profile)
+                    .into(holder._ivProfile));
+        }
+        else holder._ivProfile.setImageResource(R.drawable.default_profile);
         //reference for requests
         _databaseReferenceFriendRequests = FirebaseDatabase.getInstance().getReference().child(NodeNames.FRIEND_REQUESTS);
         //reference for Chats
