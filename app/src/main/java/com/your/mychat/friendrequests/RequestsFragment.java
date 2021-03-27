@@ -114,8 +114,10 @@ public class RequestsFragment extends Fragment {
         _databaseReferenceUsers = FirebaseDatabase.getInstance().getReference().child(NodeNames.USERS);
         _databaseReferenceRequests = FirebaseDatabase.getInstance().getReference().child(NodeNames.FRIEND_REQUESTS).child(_currentUser.getUid());
 
-        _tvEmptyRequestsList.setVisibility(View.VISIBLE);
         _progressBar.setVisibility(View.VISIBLE);
+
+        _tvEmptyRequestsList.setVisibility(View.VISIBLE);
+
 
         _databaseReferenceRequests.addValueEventListener(new ValueEventListener() {
             @Override

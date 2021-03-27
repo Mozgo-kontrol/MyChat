@@ -1,6 +1,8 @@
 package com.your.mychat.chats;
 
 import android.content.Context;
+import android.content.Intent;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,15 +14,20 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.annotation.GlideModule;
+import com.google.android.gms.tasks.OnFailureListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.your.mychat.R;
+import com.your.mychat.common.Extras;
 
 import java.util.List;
 
 import static com.your.mychat.common.Constants.IMAGES_FOLDER;
 
 public class ChatListAdapter extends RecyclerView.Adapter<ChatListAdapter.ChatListViewHolder> {
+
+    private static final String TAG = "ChatListAdapter";
 
     private Context context;
     private List<ChatListModel> chatListModelList;
@@ -40,20 +47,28 @@ public class ChatListAdapter extends RecyclerView.Adapter<ChatListAdapter.ChatLi
         return new ChatListViewHolder(view);
 
     }
-
     @Override
     public void onBindViewHolder(@NonNull ChatListAdapter.ChatListViewHolder holder, int position) {
          ChatListModel chatListModel = chatListModelList.get(position);
 
          holder._tvFullName.setText(chatListModel.get_userName());
 
-         StorageReference fileRef = FirebaseStorage.getInstance().getReference().child(IMAGES_FOLDER+"/"+chatListModel.get_userId()+".ipg");
+         StorageReference fileRef = FirebaseStorage.getInstance().getReference().child(IMAGES_FOLDER+"/"+chatListModel.get_userId());
 
-         fileRef.getDownloadUrl().addOnSuccessListener(uri ->
-                Glide.with(context).load(uri)
-                        .placeholder(R.drawable.default_profile)
-                        .error(R.drawable.default_profile)
-                        .into(holder._ivProfile));
+        Log.i(TAG, fileRef.toString());
+
+             fileRef.getDownloadUrl().addOnSuccessListener(url ->
+                     Glide.with(context).load(url)
+                             .placeholder(R.drawable.default_profile)
+                             .error(R.drawable.default_profile)
+                             .into(holder._ivProfile));
+
+
+         holder._llChatlist.setOnClickListener(v -> {
+             Intent intent= new Intent (context, ChatActivity.class);
+             intent.putExtra(Extras.USER_KEY, chatListModel.get_userId());
+             context.startActivity(intent);
+         });
 
     }
 

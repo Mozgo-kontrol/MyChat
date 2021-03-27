@@ -116,6 +116,7 @@ public class FindFriendsFragment extends Fragment {
 
         _vtEmptyFriendsList.setVisibility(View.VISIBLE);
         _progressBar.setVisibility(View.VISIBLE);
+        _vtEmptyFriendsList.setVisibility(View.VISIBLE);
         //Add the users from Firebase
         Query query = _databaseReference.orderByChild(NodeNames.NAME);
         query.addValueEventListener(new ValueEventListener() {

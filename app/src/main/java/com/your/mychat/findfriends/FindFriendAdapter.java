@@ -34,7 +34,7 @@ import static com.your.mychat.R.string.request_sent_successfully;
 import static com.your.mychat.common.Constants.IMAGES_FOLDER;
 
 public class FindFriendAdapter extends RecyclerView.Adapter<FindFriendAdapter.FindFriendViewHolder> {
-    //
+      private static final String TAG = "FindFriendAdapter";
     private Context context;
     private List<FindFriendModel> findFriendModelList;
     //Friend request
@@ -63,6 +63,8 @@ public class FindFriendAdapter extends RecyclerView.Adapter<FindFriendAdapter.Fi
           holder._tv_full_Name.setText(findfriendModel.get_userName());
 
         StorageReference fileRef = FirebaseStorage.getInstance().getReference().child(IMAGES_FOLDER+"/"+findfriendModel.get_userId()+".ipg");
+        Log.i(TAG, fileRef.toString());
+
         fileRef.getDownloadUrl().addOnSuccessListener(uri ->
                 Glide.with(context).load(uri)
                 .placeholder(R.drawable.default_profile)

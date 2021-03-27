@@ -124,9 +124,8 @@ public class ChatFragment extends Fragment {
         _progressBar =view.findViewById(R.id.progressbar_fc);
 
         _databaseReferenceUsers = FirebaseDatabase.getInstance().getReference().child(NodeNames.USERS);
-        _databaseReferenceChats = FirebaseDatabase.getInstance().getReference().child(NodeNames.CHATS);
-
         _currentUser = FirebaseAuth.getInstance().getCurrentUser();
+        _databaseReferenceChats = FirebaseDatabase.getInstance().getReference().child(NodeNames.CHATS).child(_currentUser.getUid());
 
         query = _databaseReferenceChats.orderByChild(NodeNames.TIME_STAMP);
 
@@ -158,6 +157,7 @@ public class ChatFragment extends Fragment {
         };
 
         query.addChildEventListener(_childEventListener);
+
         _progressBar.setVisibility(View.VISIBLE);
         _tvEmptyChatList.setVisibility(View.VISIBLE);
     }
