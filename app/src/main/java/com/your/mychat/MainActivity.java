@@ -9,6 +9,8 @@ import androidx.preference.PreferenceManager;
 import androidx.viewpager.widget.ViewPager;
 import androidx.viewpager2.widget.ViewPager2;
 
+import android.annotation.SuppressLint;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
@@ -23,7 +25,11 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.your.mychat.adapter.Adapter;
+import com.your.mychat.common.NodeNames;
 import com.your.mychat.login.LoginActivity;
+
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 /**
  * Created by Igor Ferbert 26.10.2020
@@ -35,6 +41,9 @@ public class MainActivity extends AppCompatActivity {
     private TabLayout _tabLayout;
     private ViewPager _viewPager;
 
+    private SharedPreferences SysSharedPreferences;
+    private SharedPreferences.Editor editor;
+
     private FirebaseAuth _firebaseAuth;
     private FirebaseUser _firebaseUser;
     private DatabaseReference _databaseReference;
@@ -42,6 +51,7 @@ public class MainActivity extends AppCompatActivity {
     private Uri _userPhoto;
     private String intentUserName;
     private SharedPreferences _SharedPreferences;
+    private int lastday;
      Uri intentUserPhoto;
 
      // for onBackPressed method
@@ -51,6 +61,10 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+
+
+
 
 
         _SharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);

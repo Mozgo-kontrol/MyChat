@@ -121,14 +121,15 @@ public class ChatFragment extends Fragment {
         _rvChatList.setLayoutManager(linearLayoutManager);
 
         _rvChatList.setAdapter(_chatListAdapter);
-        _progressBar =view.findViewById(R.id.progressbar_fc);
+        _progressBar = view.findViewById(R.id.progressbar_fc);
 
         _databaseReferenceUsers = FirebaseDatabase.getInstance().getReference().child(NodeNames.USERS);
         _currentUser = FirebaseAuth.getInstance().getCurrentUser();
         _databaseReferenceChats = FirebaseDatabase.getInstance().getReference().child(NodeNames.CHATS).child(_currentUser.getUid());
 
+        _tvEmptyChatList.setVisibility(View.VISIBLE);
         query = _databaseReferenceChats.orderByChild(NodeNames.TIME_STAMP);
-
+        _progressBar.setVisibility(View.VISIBLE);
         _childEventListener = new ChildEventListener() {
             @Override
             public void onChildAdded(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
@@ -158,8 +159,6 @@ public class ChatFragment extends Fragment {
 
         query.addChildEventListener(_childEventListener);
 
-        _progressBar.setVisibility(View.VISIBLE);
-        _tvEmptyChatList.setVisibility(View.VISIBLE);
     }
     private void updateList(DataSnapshot dataSnapshot, boolean isNew, String userID)
     {

@@ -40,4 +40,6 @@ public class NodeNames {
     public static final String MESSAGE_FROM = "messageFrom";
     public static final String MESSAGE_TIME = "messageTime";
 
+    public static final String LAST_DATE = "lastdate";
+    public static final String SYS_SHARED_PREFERENS = "SysSharedPreferences" ;
 }

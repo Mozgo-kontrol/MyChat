@@ -15,8 +15,9 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/CustomTheme.MyChat">
-        <activity android:name=".chats.ChatActivity"></activity>
-        <activity android:name=".MessageActivity" />
+        <activity android:name=".chats.ChatActivity"
+            android:windowSoftInputMode="adjustResize"/>
+        <activity android:name=".MessageActivity"/>
         <activity
             android:name=".change.password.ResetPasswordActivity"
             android:screenOrientation="portrait" />

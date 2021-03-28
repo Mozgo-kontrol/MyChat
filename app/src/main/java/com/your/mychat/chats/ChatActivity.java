@@ -8,8 +8,10 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import android.annotation.SuppressLint;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
@@ -60,6 +62,7 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat);
+        getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE| WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
         _ivSend=findViewById(R.id.iv_send_chat_activity);
         _etMessage=findViewById(R.id.et_message_chat_activity);
 
@@ -75,11 +78,18 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
         }
         _rvMessages=findViewById(R.id.rvMessages);
         _srlMessages=findViewById(R.id.srl_messages);
-
          _messagesModelList =new ArrayList<>();
          _messagesAdapter =new MessagesAdapter(this, _messagesModelList);
          _rvMessages.setLayoutManager(new LinearLayoutManager(this));
          _rvMessages.setAdapter(_messagesAdapter);
+
+        //go to last position if the keyboard up
+        _rvMessages.addOnLayoutChangeListener((v, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom) -> {
+            if (bottom < oldBottom) {
+                _rvMessages.post(() -> _rvMessages.scrollToPosition(
+                        _messagesModelList.size()-1));
+            }
+        });
 
          loadMessages();
          _rvMessages.scrollToPosition(_messagesModelList.size()-1);
@@ -178,6 +188,7 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
                  @Override
                  public void onChildAdded(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
                      MessageModel message = snapshot.getValue(MessageModel.class);
+
                      _messagesModelList.add(message);
                      _messagesAdapter.notifyDataSetChanged();
 
