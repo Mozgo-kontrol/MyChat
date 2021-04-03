@@ -62,6 +62,12 @@
     <string name="failed_to_send_message">Failed to send the message : %1$s</string>
     <string name="send_succesfully">Message sent successfully</string>
     <string name="image">image</string>
+    <string name="video">Video</string>
+    <string name="camera">camera</string>
+    <string name="gallery">gallery</string>
+    <string name="permission_required_to_access">Permission required to access files</string>
+    <string name="upload_progress">Uploading %1$s (%2$s %%)</string>
+    <string name="failed_to_upload_the_file">Failed to upload : %1$s</string>
 
 
 </resources>

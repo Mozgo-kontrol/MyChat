@@ -3,9 +3,11 @@ package com.your.mychat.chats;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.net.Uri;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -14,8 +16,10 @@ import androidx.annotation.Nullable;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
 import com.google.firebase.auth.FirebaseAuth;
 import com.your.mychat.R;
+import com.your.mychat.common.Constants;
 import com.your.mychat.common.NodeNames;
 
 import org.jetbrains.annotations.NotNull;
@@ -116,18 +120,83 @@ public class MessagesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         if (holder instanceof MessageViewHolder) {
             if (fromUserId.equals(currentUserId))
             {
-                     ((MessageViewHolder) holder).llSent.setVisibility(View.VISIBLE);
-                     ((MessageViewHolder) holder).llReceived.setVisibility(View.GONE);
-                     ((MessageViewHolder) holder).tvSentMessage.setText(message.getMessage());
-                     ((MessageViewHolder) holder).tvSentMessageTime.setText(messageTime);
+                    if(message.getMessageType().equals(Constants.MESSAGE_TYPE_TEXT))
+                    {
+
+                        ((MessageViewHolder) holder).llSent.setVisibility(View.VISIBLE);
+                        ((MessageViewHolder) holder).llSentImage.setVisibility(View.GONE);
+
+                    }
+                    else
+                    {
+                        ((MessageViewHolder) holder).llSent.setVisibility(View.GONE);
+                        ((MessageViewHolder) holder).llSentImage.setVisibility(View.VISIBLE);
+
+                    }
+                        ((MessageViewHolder) holder).llReceived.setVisibility(View.GONE);
+                        ((MessageViewHolder) holder).llReceivedImage.setVisibility(View.GONE);
+
+
+
+                        ((MessageViewHolder) holder).tvSentMessage.setText(message.getMessage());
+                        ((MessageViewHolder) holder).tvSentMessageTime.setText(messageTime);
+                        ((MessageViewHolder) holder).tvSentImageTime.setText(messageTime);
+
+                        Glide.with(context)
+                             .load(message.getMessage())
+                             .placeholder(R.drawable.ic_image)
+                             .into(((MessageViewHolder) holder).ivSentImage);
+
             }
             else
                 {
-                     ((MessageViewHolder) holder).llReceived.setVisibility(View.VISIBLE);
-                     ((MessageViewHolder) holder).llSent.setVisibility(View.GONE);
+                    if(message.getMessageType().equals(Constants.MESSAGE_TYPE_TEXT))
+                    {
+                        ((MessageViewHolder) holder).llReceived.setVisibility(View.VISIBLE);
+                        ((MessageViewHolder) holder).llReceivedImage.setVisibility(View.GONE);
+                    }
+                    else
+                    {
+                        ((MessageViewHolder) holder).llReceived.setVisibility(View.GONE);
+                        ((MessageViewHolder) holder).llReceivedImage.setVisibility(View.VISIBLE);
+                    }
+
+                    ((MessageViewHolder) holder).llSent.setVisibility(View.GONE);
+                    ((MessageViewHolder) holder).llSentImage.setVisibility(View.GONE);
+
+
                      ((MessageViewHolder) holder).tvReceivedMessage.setText(message.getMessage());
                      ((MessageViewHolder) holder).tvReceivedMessageTime.setText(messageTime);
+
+                    ((MessageViewHolder) holder).tvReceivedImageTime.setText(messageTime);
+
+                    Glide.with(context)
+                            .load(message.getMessage())
+                            .placeholder(R.drawable.ic_image)
+                            .into(((MessageViewHolder) holder).ivReceivedImage);
                 }
+
+            ((MessageViewHolder) holder).clMessage.setTag(R.id.TAG_MESSAGE,message.getMessage());
+            ((MessageViewHolder) holder).clMessage.setTag(R.id.TAG_MESSAGE_ID,message.getMessageId());
+            ((MessageViewHolder) holder).clMessage.setTag(R.id.TAG_MESSAGE_TYPE,message.getMessageType());
+            ((MessageViewHolder) holder).clMessage.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    String messageType =v.getTag(R.id.TAG_MESSAGE_TYPE).toString();
+                    Uri uri = Uri.parse(v.getTag(R.id.TAG_MESSAGE).toString());
+                    if(messageType.equals(Constants.MESSAGE_TYPE_VIDEO))
+                    {
+                        Intent intent = new Intent(Intent.ACTION_VIEW,uri);
+                        intent.setDataAndType(uri,"video/mp4");
+                        context.startActivity(intent);
+                    }
+                    else if(messageType.equals(Constants.MESSAGE_TYPE_IMAGE)){
+                        Intent intent = new Intent(Intent.ACTION_VIEW,uri);
+                        intent.setDataAndType(uri,"image/jpg");
+                        context.startActivity(intent);
+                    }
+                }
+            });
         }
 
     }
@@ -139,8 +208,9 @@ public class MessagesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
 
     public class MessageViewHolder extends RecyclerView.ViewHolder {
 
-        private LinearLayout llSent, llReceived,clMessage;
-        private TextView tvSentMessage, tvSentMessageTime, tvReceivedMessage, tvReceivedMessageTime;
+        private LinearLayout llSent, llReceived,clMessage, llSentImage, llReceivedImage;
+        private TextView tvSentMessage, tvSentMessageTime, tvReceivedMessage, tvReceivedMessageTime,tvSentImageTime, tvReceivedImageTime ;
+        private ImageView ivSentImage, ivReceivedImage;
 
         public MessageViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -151,6 +221,14 @@ public class MessagesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
             tvSentMessageTime=itemView.findViewById(R.id.tvSentMessageTime);
             tvReceivedMessage=itemView.findViewById(R.id.tvReceivedMessage);
             tvReceivedMessageTime=itemView.findViewById(R.id.tvReceivedMessageTime);
+
+            llSentImage=itemView.findViewById(R.id.llSentImage);
+            ivSentImage=itemView.findViewById(R.id.ivSentImage);
+            ivReceivedImage=itemView.findViewById(R.id.ivReceivedImage);
+            llReceivedImage=itemView.findViewById(R.id.llReceivedImage);
+            tvSentImageTime=itemView.findViewById(R.id.tvSentImageTime);
+            tvReceivedImageTime=itemView.findViewById(R.id.tvReceivedImageTime);
+
 
 
         }

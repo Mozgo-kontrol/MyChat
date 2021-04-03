@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:id="@+id/llProfile"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:background="@color/blue_gray"
+    android:orientation="horizontal"
+    android:gravity="center_vertical"
+    >
+
+    <com.mikhaellopez.circularimageview.CircularImageView
+        android:id="@+id/ivProfileCustoBar"
+        android:layout_height="42dp"
+        android:layout_width="42dp"
+        app:civ_border="false"
+        android:src="@drawable/default_profile"/>
+    <TextView
+        android:id="@+id/tvUserCustomBar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="8dp"
+        android:singleLine="true"
+        android:ellipsize="marquee"
+        android:fadingEdge="horizontal"
+        android:marqueeRepeatLimit="marquee_forever"
+        android:scrollHorizontally="true"
+        android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+        android:textStyle="bold"
+        tools:text="User Name"
+        android:textColor="@color/white"/>
+
+
+</LinearLayout>
