@@ -3,4 +3,5 @@
     <color name="gray">#A2A2A2</color>
     <color name="linkColor">#039BE5</color>
     <color name="hell_green">#6AEC70</color>
+    <color name="chat_background">#ededed</color>
 </resources>

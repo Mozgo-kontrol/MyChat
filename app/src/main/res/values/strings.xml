@@ -90,7 +90,21 @@
     <string name="gallery">gallery</string>
     <string name="permission_required_to_access">Permission required to access files</string>
     <string name="upload_progress">Uploading %1$s (%2$s %%)</string>
+    <string name="download_progress">Download %1$s (%2$s %%)</string>
     <string name="failed_to_upload_the_file">Failed to upload : %1$s</string>
+    <string name="forward">Forward</string>
+    <string name="delete">Delete</string>
+    <string name="share">Share</string>
+    <string name="download">download</string>
+    <string name="delete_option_clicked">Delete Option Clicked</string>
+    <string name="failed_to_delete_message">Failed to delete message : %1$s</string>
+    <string name="message_deleted_successfully">message deleted successfully</string>
+    <string name="failed_to_delete_file">Failed to delete file : %1$s</string>
+    <string name="failed_to_store_file">Failed to store file</string>
+    <string name="file_downloaded_successfully">File Downloaded Successfully</string>
+    <string name="view">View</string>
+    <string name="failed_to_download_the_file">Failed to download the file : %1$s</string>
+    <string name="share_with">Share with..</string>
 
 
 </resources>

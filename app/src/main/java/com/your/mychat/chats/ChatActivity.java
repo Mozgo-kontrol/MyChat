@@ -41,6 +41,7 @@ import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
+import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
@@ -49,6 +50,8 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.ServerValue;
+import com.google.firebase.database.snapshot.Node;
+import com.google.firebase.storage.FileDownloadTask;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.OnProgressListener;
 import com.google.firebase.storage.StorageReference;
@@ -58,8 +61,11 @@ import com.your.mychat.common.Constants;
 import com.your.mychat.common.Extras;
 import com.your.mychat.common.NodeNames;
 import com.your.mychat.common.Util;
+import com.your.mychat.selectfriend.SelectFriendActivity;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -99,7 +105,7 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
     private static final int REQUEST_CODE_PICK_IMAGE=101;
     private static final int REQUEST_CODE_CAPTURE_IMAGE=102;
     private static final int REQUEST_CODE_PICK_VIDEO=103;
-
+    private static final int REQUEST_CODE_FORWARD_MESSAGE = 104;
     //Progressbar
     private LinearLayout _llProgress;
 
@@ -131,7 +137,7 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
             actionBar.setDisplayOptions(actionBar.getDisplayOptions()|ActionBar.DISPLAY_SHOW_CUSTOM);
         }
         //------------------------------------------------
-        //custombar
+        //customBar
         _tvUserName=findViewById(R.id.tvUserCustomBar);
         _ivProfile=findViewById(R.id.ivProfileCustoBar);
         //------------------------------------------------
@@ -162,6 +168,7 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
         }
         _tvUserName.setText(_userName);
 
+         //if photoname is not empty
         if(!TextUtils.isEmpty(_photoName)) {
             StorageReference photoRef = FirebaseStorage.getInstance().getReference().child(Constants.IMAGES_FOLDER).child(_photoName);
             photoRef.getDownloadUrl().addOnSuccessListener(uri -> {
@@ -181,19 +188,21 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
          _rvMessages.setLayoutManager(new LinearLayoutManager(this));
          _rvMessages.setAdapter(_messagesAdapter);
 
-        //go to last position if the keyboard up
-        _rvMessages.addOnLayoutChangeListener((v, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom) -> {
-            if (bottom < oldBottom) {
-                _rvMessages.post(() -> _rvMessages.scrollToPosition(
-                        _messagesModelList.size()-1));
-            }
-        });
+
 
          loadMessages();
          _rvMessages.scrollToPosition(_messagesModelList.size()-1);
         _srlMessages.setOnRefreshListener(() -> {
             _currentPage++;
             loadMessages();
+        });
+
+        //go to last position if the keyboard up
+        _rvMessages.addOnLayoutChangeListener((v, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom) -> {
+            if (bottom < oldBottom) {
+                _rvMessages.post(() -> _rvMessages.scrollToPosition(
+                        _messagesModelList.size()-1));
+            }
         });
 
         //dialog
@@ -205,6 +214,44 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
         _dialogView.findViewById(R.id.id_close).setOnClickListener(this);
         _bottomSheetDialog.setContentView( _dialogView);
 
+        //if user back from SelectFriendActivity
+
+        if(getIntent().hasExtra(Extras.SELECTED_MESSAGE)
+                && getIntent().hasExtra(Extras.SELECTED_MESSAGE_ID)
+                && getIntent().hasExtra(Extras.SELECTED_MESSAGE_TYPE))
+        {
+            String selectedMessage = getIntent().getStringExtra(Extras.SELECTED_MESSAGE);
+            String selectedMessageId = getIntent().getStringExtra(Extras.SELECTED_MESSAGE_ID);
+            String selectedMessageType = getIntent().getStringExtra(Extras.SELECTED_MESSAGE_TYPE);
+
+            //we need new Message id
+            DatabaseReference messageRef =_mRootRef.child(NodeNames.MESSAGES).child(_currentUserId).child(_chatUserId).push();
+            String newMessageId = messageRef.getKey();
+            if(selectedMessageType.equals(Constants.MESSAGE_TYPE_TEXT)) {
+                sendMessage(selectedMessage, selectedMessageType, newMessageId);
+            }
+            else{
+                StorageReference rootRef=FirebaseStorage.getInstance().getReference();
+
+                String folder = selectedMessageType.equals(Constants.MESSAGE_TYPE_VIDEO)?Constants.MESSAGE_VIDEOS:Constants.MESSAGE_IMAGES;
+                String oldFileName = selectedMessageType.equals(Constants.MESSAGE_TYPE_VIDEO)?selectedMessageId+".mp4": selectedMessageId+".jpg";
+                String newFileName = selectedMessageType.equals(Constants.MESSAGE_TYPE_VIDEO)?newMessageId+".mp4": newMessageId+".jpg";
+
+                String localFilePath = getExternalFilesDir(null).getAbsolutePath()+"/"+oldFileName;
+                File localFile = new File(localFilePath);
+
+                StorageReference newFileRef = rootRef.child(folder).child(newFileName);
+                rootRef.child(folder).child(oldFileName).getFile(localFile).addOnSuccessListener(taskSnapshot -> {
+
+                    UploadTask uploadTask = newFileRef.putFile(Uri.fromFile(localFile));
+                    uploadProgress(uploadTask, newFileRef, newMessageId, selectedMessageType);
+
+                });
+
+            }
+
+
+        }
 
     }
 
@@ -307,6 +354,20 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
                 Uri uri = data.getData();
                 uploadFile(uri , Constants.MESSAGE_TYPE_VIDEO);
             }
+            else if (requestCode==REQUEST_CODE_FORWARD_MESSAGE){
+
+            Intent intent =new Intent(this, ChatActivity.class);
+
+            intent.putExtra(Extras.USER_KEY, data.getStringExtra(Extras.USER_KEY));
+            intent.putExtra(Extras.USER_NAME, data.getStringExtra(Extras.USER_NAME));
+            intent.putExtra(Extras.PHOTO_NAME, data.getStringExtra(Extras.PHOTO_NAME));
+
+            intent.putExtra(Extras.SELECTED_MESSAGE, data.getStringExtra(Extras.SELECTED_MESSAGE));
+            intent.putExtra(Extras.SELECTED_MESSAGE_ID, data.getStringExtra(Extras.SELECTED_MESSAGE_ID));
+            intent.putExtra(Extras.SELECTED_MESSAGE_TYPE, data.getStringExtra(Extras.SELECTED_MESSAGE_TYPE));
+             startActivity(intent);
+             finish();
+            }
 
         }
 
@@ -334,8 +395,8 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
 
       View view = getLayoutInflater().inflate(R.layout.file_progress,null);
 
-        ProgressBar progressBar = view.findViewById(R.id.pbProgress);
-        TextView tvProgress=view.findViewById(R.id.tvfileProgress);
+       final ProgressBar progressBar = view.findViewById(R.id.pbProgress);
+       final TextView tvProgress=view.findViewById(R.id.tvfileProgress);
        final ImageView ivPlay=view.findViewById(R.id.iv_Play);
        final ImageView ivPause=view.findViewById(R.id.ivPause);
        final ImageView ivCancel=view.findViewById(R.id.iv_Cancel);
@@ -496,12 +557,12 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
 
                  @Override
                  public void onChildRemoved(@NonNull DataSnapshot snapshot) {
-
+                                loadMessages();
                  }
 
                  @Override
                  public void onChildMoved(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
-
+                                loadMessages();
                  }
 
                  @Override
@@ -512,4 +573,167 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
         messageQuery.addChildEventListener(childEventListener);
     }
 
+    public void deleteMessage(String messageId, String messageType){
+        DatabaseReference databaseReferenceMessageCurrentUser =_mRootRef.child(NodeNames.MESSAGES)
+                .child(_currentUserId)
+                .child(_chatUserId)
+                .child(messageId);
+        databaseReferenceMessageCurrentUser.removeValue().addOnCompleteListener(task -> {
+            if(task.isSuccessful())
+            {
+
+                DatabaseReference databaseReferenceMessageChatUser =_mRootRef.child(NodeNames.MESSAGES)
+                        .child(_chatUserId)
+                        .child(_currentUserId)
+                        .child(messageId);
+                databaseReferenceMessageChatUser.removeValue().addOnCompleteListener(task1 -> {
+                    if(task1.isSuccessful())
+                    {
+                        if(!messageType.equals(Constants.MESSAGE_TYPE_TEXT))
+                        {
+                          StorageReference rootRef =FirebaseStorage.getInstance().getReference();
+                          String folder = messageType.equals(Constants.MESSAGE_TYPE_VIDEO)?Constants.MESSAGE_VIDEOS : Constants.MESSAGE_IMAGES;
+                          String fileName = messageType.equals(Constants.MESSAGE_TYPE_VIDEO)?messageId+".mp4": messageId+".jpg";
+                          StorageReference fileRef = rootRef.child(folder).child(fileName);
+
+                          fileRef.delete().addOnCompleteListener(task2 ->
+                          {
+                              if(!task2.isSuccessful()){
+                                  Toast.makeText(ChatActivity.this, getString(R.string.failed_to_delete_file, task2.getException()) , Toast.LENGTH_SHORT).show();
+                              }
+                          });
+                        }
+                        else   Toast.makeText(ChatActivity.this, getString(R.string.message_deleted_successfully) , Toast.LENGTH_SHORT).show();
+
+                    }
+                    else Toast.makeText(ChatActivity.this, getString(R.string.failed_to_delete_message, task1.getException()) , Toast.LENGTH_SHORT).show();
+                });
+            }
+            else Toast.makeText(ChatActivity.this, getString(R.string.failed_to_delete_message, task.getException()) , Toast.LENGTH_SHORT).show();
+        });
+    }
+
+    public void downloadFile(String messageId, final String messageType, boolean isForShare){
+        if(ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)==PackageManager.PERMISSION_DENIED)
+        {
+         ActivityCompat.requestPermissions(this,new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 2);
+        }
+
+        else {
+
+            StorageReference rootRef = FirebaseStorage.getInstance().getReference();
+            String folder = messageType.equals(Constants.MESSAGE_TYPE_VIDEO)?Constants.MESSAGE_VIDEOS : Constants.MESSAGE_IMAGES;
+            String fileName = messageType.equals(Constants.MESSAGE_TYPE_VIDEO)?messageId+".mp4": messageId+".jpg";
+            StorageReference fileRef = rootRef.child(folder).child(fileName);
+
+
+            String localFilePath= getExternalFilesDir(null).getAbsolutePath()+"/"+fileName;
+            File localFile=new File(localFilePath);
+            try {
+                if(localFile.exists()||localFile.createNewFile()){
+
+                   FileDownloadTask downloadTask = fileRef.getFile(localFile);
+
+                    View view = getLayoutInflater().inflate(R.layout.file_progress,null);
+
+                    final ProgressBar progressBar = view.findViewById(R.id.pbProgress);
+                    final TextView tvProgress=view.findViewById(R.id.tvfileProgress);
+                    final ImageView ivPlay=view.findViewById(R.id.iv_Play);
+                    final ImageView ivPause=view.findViewById(R.id.ivPause);
+                    final ImageView ivCancel=view.findViewById(R.id.iv_Cancel);
+
+                    ivPause.setOnClickListener(v -> {
+                        downloadTask.pause();
+                        ivPlay.setVisibility(View.VISIBLE);
+                        ivPause.setVisibility(View.GONE);
+                    });
+
+                    ivPlay.setOnClickListener(v -> {
+                        downloadTask.resume();
+                        ivPlay.setVisibility(View.GONE);
+                        ivPause.setVisibility(View.VISIBLE);
+                    });
+                    ivCancel.setOnClickListener(v -> downloadTask.cancel());
+
+
+                    _llProgress.addView(view);
+                    tvProgress.setText(getString(R.string.download_progress, messageType, "0"));
+                   //
+                    downloadTask.addOnProgressListener(snapshot -> {
+
+                        double progress =(100.0*snapshot.getBytesTransferred())/snapshot.getTotalByteCount();
+                        progressBar.setProgress((int)progress);
+                        tvProgress.setText(getString(R.string.download_progress, messageType, String.valueOf(progressBar.getProgress())));
+
+                    });
+                    downloadTask.addOnCompleteListener(task -> {
+                        _llProgress.removeView(view);
+                        if(task.isSuccessful()){
+
+                            if(isForShare)
+                            {
+                                Intent intentShare =new Intent();
+                                intentShare.setAction(Intent.ACTION_SEND);
+                                intentShare.putExtra(Intent.EXTRA_STREAM,Uri.parse(localFilePath));
+                                if(messageType.equals(Constants.MESSAGE_TYPE_VIDEO))
+                                {
+                                    intentShare.setType("video/mp4");
+                                }
+                                else if(messageType.equals(Constants.MESSAGE_TYPE_IMAGE))
+                                {
+                                   intentShare.setType("image/jpg");
+                                }
+                                startActivity(Intent.createChooser(intentShare, getString(R.string.share_with)));
+
+                            }
+                            else
+                                {
+                                  Snackbar snackbar =Snackbar.make(_llProgress, getString(R.string.file_downloaded_successfully),Snackbar.LENGTH_INDEFINITE);
+                                  snackbar.setAction(R.string.view, v ->
+                                  {
+                                       Uri uri = Uri.parse(localFilePath);
+                                       Intent intent =new Intent(Intent.ACTION_VIEW,uri);
+                                       if(messageType.equals(Constants.MESSAGE_TYPE_VIDEO))
+                                           {
+                                             intent.setDataAndType(uri,"video/mp4");
+                                           }
+                                       else if(messageType.equals(Constants.MESSAGE_TYPE_IMAGE))
+                                           {
+                                           intent.setDataAndType(uri,"image/jpg");
+                                           }
+                                       startActivity(intent);
+                                  });
+                                    snackbar.show();
+                                }
+                        }
+                    });
+                    //?
+                    downloadTask.addOnFailureListener(e -> {
+                        _llProgress.removeView(view);
+                        Toast.makeText(ChatActivity.this, getString(R.string.failed_to_download_the_file, e.getMessage()), Toast.LENGTH_SHORT).show();
+                    });
+
+                }
+                else Toast.makeText(ChatActivity.this, getString(R.string.failed_to_store_file) , Toast.LENGTH_SHORT).show();
+
+            } catch (IOException e) {
+                Toast.makeText(ChatActivity.this, getString(R.string.failed_to_download_the_file, e.getMessage()), Toast.LENGTH_SHORT).show();
+                e.printStackTrace();
+            }
+
+        }
+    }
+
+    public void forwardMessage(String selectedMessageId, String selectedMessage, String selectedMessageType)
+    {
+
+
+        Intent intent = new Intent(this, SelectFriendActivity.class);
+        intent.putExtra(Extras.SELECTED_MESSAGE, selectedMessage);
+        intent.putExtra(Extras.SELECTED_MESSAGE_ID, selectedMessageId);
+        intent.putExtra(Extras.SELECTED_MESSAGE_TYPE, selectedMessageType);
+        startActivityForResult(intent,REQUEST_CODE_FORWARD_MESSAGE);
+
+
+    }
 }

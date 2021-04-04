@@ -55,8 +55,9 @@
 
       <ImageView
           android:id="@+id/ivReceivedImage"
-          android:layout_width="90dp"
+          android:layout_width="100dp"
           android:layout_height="100dp"
+          android:layout_margin="4dp"
           android:src="@drawable/ic_image"/>
         <TextView
             android:id="@+id/tvReceivedImageTime"

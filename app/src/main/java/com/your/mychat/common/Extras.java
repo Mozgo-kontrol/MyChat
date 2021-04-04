@@ -6,4 +6,7 @@ public class Extras {
     public static final String USER_NAME = "user_name";
     public static final String PHOTO_NAME = "photo_name";
 
+    public static final String SELECTED_MESSAGE = "selected_message";
+    public static final String SELECTED_MESSAGE_ID ="selected_message_id";
+    public static final String SELECTED_MESSAGE_TYPE = "selected_message_type";
 }
