@@ -191,6 +191,10 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
 
 
          loadMessages();
+         //update unread count
+         _mRootRef.child(NodeNames.CHATS).child(_currentUserId).child(_chatUserId).child(NodeNames.UNREAD_COUNT).setValue(0);
+         //----------------------------------------------------------------------------------------
+
          _rvMessages.scrollToPosition(_messagesModelList.size()-1);
         _srlMessages.setOnRefreshListener(() -> {
             _currentPage++;
@@ -531,6 +535,8 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
 
                         Util.sendNotification(ChatActivity.this, title, msg, _chatUserId, _currentUserId);
                         //---------------------------------------------------------
+                        //increment unread message
+                        Util.updateChatDetails(ChatActivity.this, _currentUserId, _chatUserId);
                     }
                 });
 
@@ -747,14 +753,19 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
 
     public void forwardMessage(String selectedMessageId, String selectedMessage, String selectedMessageType)
     {
-
-
         Intent intent = new Intent(this, SelectFriendActivity.class);
         intent.putExtra(Extras.SELECTED_MESSAGE, selectedMessage);
         intent.putExtra(Extras.SELECTED_MESSAGE_ID, selectedMessageId);
         intent.putExtra(Extras.SELECTED_MESSAGE_TYPE, selectedMessageType);
         startActivityForResult(intent,REQUEST_CODE_FORWARD_MESSAGE);
+    }
 
+    @Override
+    public void onBackPressed() {
+        //reset unread count
+        _mRootRef.child(NodeNames.CHATS).child(_currentUserId).child(_chatUserId).child(NodeNames.UNREAD_COUNT).setValue(0);
+        //----------------------------------------------------------------------------------------
 
+        super.onBackPressed();
     }
 }

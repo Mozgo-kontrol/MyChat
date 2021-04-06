@@ -7,6 +7,8 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.drawable.Drawable;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Build;
@@ -14,14 +16,19 @@ import android.os.IBinder;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
 import androidx.mediarouter.media.RemotePlaybackClient;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.target.CustomTarget;
+import com.bumptech.glide.request.transition.Transition;
 import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 import com.your.mychat.MainActivity;
 import com.your.mychat.R;
+import com.your.mychat.chats.MessagesAdapter;
 import com.your.mychat.common.Constants;
 import com.your.mychat.common.Util;
 
@@ -41,6 +48,10 @@ public class ChatMessagingService extends FirebaseMessagingService {
 
         String title = remoteMessage.getData().get(Constants.NOTIFICATION_TITLE);
         String message = remoteMessage.getData().get(Constants.NOTIFICATION_MESSAGE);
+
+        String whoHasSentID = remoteMessage.getData().get(Constants.NOTIFICATION_WHO_SENT);
+
+
         Log.d(TAG, "Notification title" + title+"; Notification Data"+message);
 
         Intent intent = new Intent(this, MainActivity.class);
@@ -68,19 +79,44 @@ public class ChatMessagingService extends FirebaseMessagingService {
              notificationBuilder = new NotificationCompat.Builder(this);
         }
 
+        notificationBuilder.setSmallIcon(R.drawable.ic_chat);
+        notificationBuilder.setContentTitle(title);
+        notificationBuilder.setColor(getResources().getColor(R.color.blue_gray));
+        notificationBuilder.setAutoCancel(true);
+        notificationBuilder.setStyle(new NotificationCompat.BigTextStyle().bigText(message));
+        notificationBuilder.setSound(defaultSoundUri);
+        notificationBuilder.setContentIntent(pendingIntent);
+        if(message.startsWith("https://firebasestorage.")){
 
-        notificationBuilder.setSmallIcon(R.drawable.ic_fire_icon_login_activity)
-        .setContentTitle(title)
-         .setColor(getResources().getColor(R.color.blue_gray))
-        .setAutoCancel(true)
-        .setStyle(new NotificationCompat.BigTextStyle().bigText(message))
-        .setSound(defaultSoundUri)
-        .setContentIntent(pendingIntent)
-        //.setLargeIcon()
-        .setContentText(message);
+            try {
+                NotificationCompat.BigPictureStyle bigPictureStyle = new NotificationCompat.BigPictureStyle();
+                Glide.with(this)
+                        .asBitmap()
+                        .load(message)
+                        .into(new CustomTarget<Bitmap>(200,100) {
+                            @Override
+                            public void onResourceReady(@NonNull Bitmap resource, @Nullable Transition<? super Bitmap> transition) {
+                                bigPictureStyle.bigPicture(resource);
+                                notificationBuilder.setStyle(bigPictureStyle);
+                                notificationManager.notify(999, notificationBuilder.build());
+                            }
 
-        Log.d(TAG, "last");
-        notificationManager.notify(999, notificationBuilder.build());
+                            @Override
+                            public void onLoadCleared(@Nullable Drawable placeholder) {
+
+                            }
+                        });
+            }
+            catch (Exception e) {
+                notificationBuilder.setContentText("New File Received");
+                e.printStackTrace();
+            }
+
+        }
+        else {
+            notificationBuilder.setContentText(message);
+            notificationManager.notify(999, notificationBuilder.build());
+           }
 
     }
 }

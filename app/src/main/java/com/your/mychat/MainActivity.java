@@ -20,11 +20,14 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
 
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.android.material.tabs.TabLayout;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.iid.FirebaseInstanceId;
 import com.google.firebase.iid.InstanceIdResult;
 import com.your.mychat.adapter.Adapter;
@@ -34,6 +37,9 @@ import com.your.mychat.login.LoginActivity;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
+
+import static com.your.mychat.R.string.request_sent_successfully;
+import static com.your.mychat.R.string.something_went_wrong;
 
 /**
  * Created by Igor Ferbert 26.10.2020
@@ -187,8 +193,21 @@ public class MainActivity extends AppCompatActivity {
             _firebaseAuth.signOut();
             //mSignInClient.signOut();
             //mUsername = ANONYMOUS;
-            startActivity(new Intent(this, LoginActivity.class));
-            finish();
+
+            //Delete Notification token
+            final FirebaseAuth firebaseAuth =FirebaseAuth.getInstance();
+            FirebaseUser currentUser = firebaseAuth.getCurrentUser();
+            DatabaseReference rootRef= FirebaseDatabase.getInstance().getReference();
+            DatabaseReference databaseReference = rootRef.child(NodeNames.TOKENS).child(currentUser.getUid());
+            databaseReference.setValue(null).addOnCompleteListener(task -> {
+                if(task.isSuccessful()){
+                    startActivity(new Intent(this, LoginActivity.class));
+                    finish();
+                }
+                else  Toast.makeText(MainActivity.this, getString(something_went_wrong, task.getException() ), Toast.LENGTH_SHORT).show();
+            });
+
+
           /*  mDatabase.child("users").child(currentUserAuth.getUid()).child("isUserOnline").setValue(false);
             AuthUI.getInstance().signOut(this)
                     .addOnCompleteListener(new OnCompleteListener<Void>() {

@@ -53,6 +53,7 @@ public class ChatFragment extends Fragment {
     private Query query;
     private ValueEventListener valueEventListener;
 
+    private List<String> userIdsList;
 
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -109,7 +110,11 @@ public class ChatFragment extends Fragment {
 
         _tvEmptyChatList=view.findViewById(R.id.tv_empty_chat_list);
 
+        userIdsList = new ArrayList<>();
+
         _chatListModelList=new ArrayList<>();
+
+
 
         _chatListAdapter= new ChatListAdapter(getActivity(),_chatListModelList);
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getActivity());
@@ -138,7 +143,7 @@ public class ChatFragment extends Fragment {
 
             @Override
             public void onChildChanged(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
-
+                updateList(snapshot, false, snapshot.getKey());
             }
 
             @Override
@@ -164,11 +169,13 @@ public class ChatFragment extends Fragment {
     {
         _progressBar.setVisibility(View.GONE);
         _tvEmptyChatList.setVisibility(View.GONE);
+
         final String lastMessage,lastMessageTime, unreadCount;
 
         lastMessage="";
         lastMessageTime="";
-        unreadCount="";
+        unreadCount=dataSnapshot.child(NodeNames.UNREAD_COUNT).getValue()==null?
+                "0" : dataSnapshot.child(NodeNames.UNREAD_COUNT).getValue().toString();
 
         _databaseReferenceUsers.child(userID).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
@@ -182,8 +189,18 @@ public class ChatFragment extends Fragment {
 
 
                 ChatListModel chatListModel = new ChatListModel(userID, fullName, photoName,unreadCount,lastMessage,lastMessageTime);
-                _chatListModelList.add(chatListModel);
-              // update adapter
+
+                if(isNew){
+                    _chatListModelList.add(chatListModel);
+                    userIdsList.add(userID);
+                }
+                else
+                    {
+                    int indexOfClickedUser  = userIdsList.indexOf(userID);
+                    _chatListModelList.set(indexOfClickedUser, chatListModel);
+                }
+
+                // update adapter
                 _chatListAdapter.notifyDataSetChanged();
             }
 

@@ -28,7 +28,8 @@ public class NodeNames {
     public static final String APP_PREFERENCES_MUTE = "muteNotification"; //
     // user gender
     public static final String APP_PREFERENCES_SEX = "sex"; //
-
+    public static final String LAST_DATE = "lastdate";
+    public static final String SYS_SHARED_PREFERENS = "SysSharedPreferences" ;
 
     public static final String REQUEST_TYPE = "request_type";
     public static final String TIME_STAMP = "timestamp" ;
@@ -40,9 +41,8 @@ public class NodeNames {
     public static final String MESSAGE_FROM = "messageFrom";
     public static final String MESSAGE_TIME = "messageTime";
 
-    public static final String LAST_DATE = "lastdate";
-    public static final String SYS_SHARED_PREFERENS = "SysSharedPreferences" ;
 
     public static final String DEVICE_TOKEN = "device_token";
 
+    public static final String UNREAD_COUNT = "unread_count";
 }

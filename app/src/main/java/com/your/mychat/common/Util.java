@@ -6,6 +6,7 @@ import android.util.Log;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.android.volley.AuthFailureError;
 import com.android.volley.RequestQueue;
@@ -24,6 +25,7 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ServerValue;
 import com.google.firebase.database.ValueEventListener;
 import com.your.mychat.R;
 
@@ -68,7 +70,7 @@ public class Util {
 
             DatabaseReference rootRef = FirebaseDatabase.getInstance().getReference();
             DatabaseReference databaseReference = rootRef.child(NodeNames.TOKENS).child(currentUser.getUid());
-            HashMap<String, String> hashMap =new HashMap<>();
+            HashMap<String, String> hashMap = new HashMap<>();
             hashMap.put(NodeNames.DEVICE_TOKEN, token);
 
             databaseReference.setValue(hashMap).addOnCompleteListener(task -> {
@@ -81,7 +83,7 @@ public class Util {
         }
     }
 
-    public  static void sendNotification(final Context context, String title,String message, String userId, String currentUserId)
+    public  static void sendNotification(final Context context, String title,String message, String userId, String whoSentId)
     {
        DatabaseReference rootRef= FirebaseDatabase.getInstance().getReference();
        DatabaseReference databaseReference = rootRef.child(NodeNames.TOKENS).child(userId);
@@ -98,9 +100,11 @@ public class Util {
                    try {
                        notificationData.put(Constants.NOTIFICATION_TITLE, title);
                        notificationData.put(Constants.NOTIFICATION_MESSAGE, message);
+
+                       notificationData.put(Constants.NOTIFICATION_WHO_SENT, whoSentId);
+
                        notification.put(Constants.NOTIFICATION_TO, deviceToken);
                        notification.put(Constants.NOTIFICATION_DATA, notificationData);
-
                        String fcmApiUrl = "https://fcm.googleapis.com/fcm/send";
                        String contentType = "application/json";
 
@@ -143,6 +147,39 @@ public class Util {
            }
        });
 
+    }
+
+    public static  void updateChatDetails(Context context, String currentUserId, String chatUserId)
+    {
+      DatabaseReference rootRef = FirebaseDatabase.getInstance().getReference();
+      DatabaseReference chatRef = rootRef.child(NodeNames.CHATS).child(chatUserId).child(currentUserId);
+
+      chatRef.addListenerForSingleValueEvent(new ValueEventListener() {
+          @Override
+          public void onDataChange(@NonNull DataSnapshot snapshot) {
+              String currentCount="0";
+              if(snapshot.child(NodeNames.UNREAD_COUNT).getValue()!=null){
+                  currentCount = snapshot.child(NodeNames.UNREAD_COUNT).getValue().toString();
+              }
+              Map chatMap =new HashMap();
+              chatMap.put(NodeNames.TIME_STAMP, ServerValue.TIMESTAMP);
+              chatMap.put(NodeNames.UNREAD_COUNT,Integer.parseInt(currentCount)+1);
+
+              Map chatUserMap = new HashMap();
+
+              chatUserMap.put(NodeNames.CHATS+"/"+chatUserId+"/"+currentUserId,chatMap);
+              chatRef.updateChildren(chatMap, (error, ref) -> {
+                  if(error!=null){
+                      Toast.makeText(context, context.getString(R.string.something_went_wrong,error.getMessage()), Toast.LENGTH_SHORT).show();
+                  }
+              });
+          }
+
+          @Override
+          public void onCancelled(@NonNull DatabaseError error) {
+              Toast.makeText(context, context.getString(R.string.something_went_wrong,error.getMessage()), Toast.LENGTH_SHORT).show();
+          }
+      });
 
 
     }
