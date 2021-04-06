@@ -10,7 +10,7 @@ public class NodeNames {
     public static final String FRIEND_REQUESTS = "friendRequests";
     public static final String CHATS = "Chats";
     public static final String MESSAGES = "Messages";
-
+    public static final String TOKENS = "Tokens";
 
 
     public static final String NAME = "name";
@@ -42,4 +42,7 @@ public class NodeNames {
 
     public static final String LAST_DATE = "lastdate";
     public static final String SYS_SHARED_PREFERENS = "SysSharedPreferences" ;
+
+    public static final String DEVICE_TOKEN = "device_token";
+
 }

@@ -81,6 +81,9 @@
     <string name="view">View</string>
     <string name="failed_to_download_the_file">Failed to download the file : %1$s</string>
     <string name="share_with">Share with..</string>
+    <string name="failed_to_save_device_token">Failed to save device token</string>
+    <string name="notification_sent">Notification Sent</string>
+    <string name="failed_to_sent_notification">Failed to send notification : %1$s</string>
 
 
 </resources>

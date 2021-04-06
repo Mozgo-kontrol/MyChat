@@ -20,12 +20,16 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
 
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.tabs.TabLayout;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.iid.FirebaseInstanceId;
+import com.google.firebase.iid.InstanceIdResult;
 import com.your.mychat.adapter.Adapter;
 import com.your.mychat.common.NodeNames;
+import com.your.mychat.common.Util;
 import com.your.mychat.login.LoginActivity;
 
 import java.text.SimpleDateFormat;
@@ -79,6 +83,10 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
         else {
+            FirebaseInstanceId.getInstance().getInstanceId().addOnSuccessListener(instanceIdResult -> {
+                Util.updateDeviceToken(MainActivity.this, instanceIdResult.getToken());
+            });
+
               _firebaseUser.getDisplayName();
             if (_firebaseUser.getPhotoUrl() != null) {
                 _userPhoto =_firebaseUser.getPhotoUrl();

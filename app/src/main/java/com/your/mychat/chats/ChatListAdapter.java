@@ -53,10 +53,9 @@ public class ChatListAdapter extends RecyclerView.Adapter<ChatListAdapter.ChatLi
 
          holder._tvFullName.setText(chatListModel.get_userName());
 
-         StorageReference fileRef = FirebaseStorage.getInstance().getReference().child(IMAGES_FOLDER+"/"+chatListModel.get_userId());
+         StorageReference fileRef = FirebaseStorage.getInstance().getReference().child(IMAGES_FOLDER+"/"+chatListModel.get_userId()+".ipg");
 
         Log.i(TAG, fileRef.toString());
-
              fileRef.getDownloadUrl().addOnSuccessListener(url ->
                      Glide.with(context).load(url)
                              .placeholder(R.drawable.default_profile)

@@ -26,6 +26,7 @@ import com.google.firebase.storage.StorageReference;
 import com.your.mychat.R;
 import com.your.mychat.common.Constants;
 import com.your.mychat.common.NodeNames;
+import com.your.mychat.common.Util;
 
 import java.util.List;
 import java.util.Objects;
@@ -98,7 +99,11 @@ public class FindFriendAdapter extends RecyclerView.Adapter<FindFriendAdapter.Fi
                                     .setValue(Constants.REQUEST_STATUS_RECEIVED).addOnCompleteListener(task1 -> {
                                         if(task1.isSuccessful()){
                                         Toast.makeText(context, request_sent_successfully, Toast.LENGTH_SHORT).show();
-
+                                        //Send  Notification about friend Request
+                                        String title = "New Friend Request";
+                                        String message = "Friend request from "+_currentUser.getDisplayName();
+                                        Util.sendNotification(context, title,message, _userId,_currentUser.getUid());
+                                         //---------------------------------------------------------
                                         holder._btn_send_request.setVisibility(View.GONE);
                                         holder._pg_Request.setVisibility(View.GONE);
                                         holder._btn_cancel_request.setVisibility(View.VISIBLE);

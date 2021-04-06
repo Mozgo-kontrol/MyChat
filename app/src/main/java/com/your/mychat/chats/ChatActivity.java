@@ -509,8 +509,29 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
                                 getString(R.string.failed_to_send_message, error.getMessage()),
                                 Toast.LENGTH_SHORT).show();
                     }
-                    else  Toast.makeText(ChatActivity.this,
+                    else  {Toast.makeText(ChatActivity.this,
                             getString(R.string.send_succesfully), Toast.LENGTH_SHORT).show();
+
+                        //Send  Notification about friend Request Accepted
+                        String title = "New";
+                        if(msgType.equals(Constants.MESSAGE_TYPE_TEXT))
+                         {
+                             title = "New Message";
+
+                         }
+                         else if(msgType.equals(Constants.MESSAGE_TYPE_IMAGE))
+                         {
+                              title = "New Image";
+
+                        }
+                        else if(msgType.equals(Constants.MESSAGE_TYPE_VIDEO))
+                        {
+                               title = "New Video";
+                        }
+
+                        Util.sendNotification(ChatActivity.this, title, msg, _chatUserId, _currentUserId);
+                        //---------------------------------------------------------
+                    }
                 });
 
             }

@@ -28,6 +28,7 @@ import com.google.firebase.storage.StorageReference;
 import com.your.mychat.R;
 import com.your.mychat.common.Constants;
 import com.your.mychat.common.NodeNames;
+import com.your.mychat.common.Util;
 
 import java.util.List;
 import java.util.Objects;
@@ -106,6 +107,12 @@ public class RequestAdapter extends RecyclerView.Adapter<RequestAdapter.ReguestV
                                     _databaseReferenceFriendRequests.child(userId).child(_currentUser.getUid()).child(NodeNames.REQUEST_TYPE)
                                             .setValue(Constants.REQUEST_STATUS_ACCEPTED).addOnCompleteListener(task14 -> {
                                         if(task14.isSuccessful()){
+
+                                            //Send  Notification about friend Request Accepted
+                                            String title = "Friend Request Accepted";
+                                            String message = "Friend request accepted by"+_currentUser.getDisplayName();
+                                            Util.sendNotification(context, title,message, userId,_currentUser.getUid());
+                                            //---------------------------------------------------------
                                             btnVisible(holder);
                                         }
                                         else handleException(holder, task14.getException());
@@ -140,11 +147,20 @@ public class RequestAdapter extends RecyclerView.Adapter<RequestAdapter.ReguestV
            _databaseReferenceFriendRequests.child(_currentUser.getUid()).child(userId)
                    .child(NodeNames.REQUEST_TYPE).setValue(null).addOnCompleteListener(task -> {
                if(task.isSuccessful()){
+
+
                    _databaseReferenceFriendRequests.child(userId).child(_currentUser.getUid()).child(NodeNames.REQUEST_TYPE).setValue(null).addOnCompleteListener(task1 -> {
                        if (!task1.isSuccessful()) {
                            Toast.makeText(context, context.getString(R.string.failed_to_deny_request, task.getException()), Toast.LENGTH_SHORT).show();
                        }
-                   btnVisible(holder);
+
+                       //Send  Notification about friend Request Deny
+                       String title = "Friend Request Denied";
+                       String message = "Friend request accepted denied by "+_currentUser.getDisplayName();
+                       Util.sendNotification(context, title,message, userId,_currentUser.getUid());
+                       //---------------------------------------------------------
+
+                       btnVisible(holder);
                    });
                }
                else {
