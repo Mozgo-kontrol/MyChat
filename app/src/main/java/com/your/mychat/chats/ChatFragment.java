@@ -53,7 +53,7 @@ public class ChatFragment extends Fragment {
     private Query query;
     private ValueEventListener valueEventListener;
 
-    private List<String> userIdsList;
+    private List<String> _userIdsList;
 
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -110,13 +110,11 @@ public class ChatFragment extends Fragment {
 
         _tvEmptyChatList=view.findViewById(R.id.tv_empty_chat_list);
 
-        userIdsList = new ArrayList<>();
+        _userIdsList = new ArrayList<>();
 
         _chatListModelList=new ArrayList<>();
-
-
-
         _chatListAdapter= new ChatListAdapter(getActivity(),_chatListModelList);
+
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getActivity());
 
         //revers List with users and some option
@@ -134,6 +132,7 @@ public class ChatFragment extends Fragment {
 
         _tvEmptyChatList.setVisibility(View.VISIBLE);
         query = _databaseReferenceChats.orderByChild(NodeNames.TIME_STAMP);
+
         _progressBar.setVisibility(View.VISIBLE);
         _childEventListener = new ChildEventListener() {
             @Override
@@ -172,10 +171,18 @@ public class ChatFragment extends Fragment {
 
         final String lastMessage,lastMessageTime, unreadCount;
 
-        lastMessage="";
-        lastMessageTime="";
-        unreadCount=dataSnapshot.child(NodeNames.UNREAD_COUNT).getValue()==null?
+         //read the lastMessage from Firebase
+        lastMessage = dataSnapshot.child(NodeNames.LAST_MESSAGE).getValue()!=null?
+                dataSnapshot.child(NodeNames.LAST_MESSAGE).getValue().toString() : "" ;
+
+       //read the lastMessage time from Firebase
+        lastMessageTime=dataSnapshot.child(NodeNames.LAST_MESSAGE_TIME).getValue()!=null?
+                dataSnapshot.child(NodeNames.LAST_MESSAGE_TIME).getValue().toString() : "" ;
+
+       //read the lastMessage time from Firebase
+        unreadCount = dataSnapshot.child(NodeNames.UNREAD_COUNT).getValue()==null?
                 "0" : dataSnapshot.child(NodeNames.UNREAD_COUNT).getValue().toString();
+
 
         _databaseReferenceUsers.child(userID).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
@@ -190,13 +197,14 @@ public class ChatFragment extends Fragment {
 
                 ChatListModel chatListModel = new ChatListModel(userID, fullName, photoName,unreadCount,lastMessage,lastMessageTime);
 
+
                 if(isNew){
                     _chatListModelList.add(chatListModel);
-                    userIdsList.add(userID);
+                    _userIdsList.add(userID);
                 }
                 else
                     {
-                    int indexOfClickedUser  = userIdsList.indexOf(userID);
+                    int indexOfClickedUser  = _userIdsList.indexOf(userID);
                     _chatListModelList.set(indexOfClickedUser, chatListModel);
                 }
 
@@ -214,7 +222,7 @@ public class ChatFragment extends Fragment {
     @Override
     public void onPause() {
         super.onPause();
-        query.removeEventListener(_childEventListener);
+
     }
 
     @Override

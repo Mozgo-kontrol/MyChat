@@ -2,6 +2,7 @@ package com.your.mychat.chats;
 
 import android.content.Context;
 import android.content.Intent;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -20,6 +21,7 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.your.mychat.R;
 import com.your.mychat.common.Extras;
+import com.your.mychat.common.Util;
 
 import java.util.List;
 
@@ -49,26 +51,56 @@ public class ChatListAdapter extends RecyclerView.Adapter<ChatListAdapter.ChatLi
     }
     @Override
     public void onBindViewHolder(@NonNull ChatListAdapter.ChatListViewHolder holder, int position) {
-         ChatListModel chatListModel = chatListModelList.get(position);
+
+         final  ChatListModel chatListModel = chatListModelList.get(position);
 
          holder._tvFullName.setText(chatListModel.get_userName());
 
-         StorageReference fileRef = FirebaseStorage.getInstance().getReference().child(IMAGES_FOLDER+"/"+chatListModel.get_userId()+".ipg");
-         //unread message
-         if(!chatListModel.get_unreadCount().equals("0"))
-         {
-             holder._tv_unreadCount.setVisibility(View.VISIBLE);
-             holder._tv_unreadCount.setText(chatListModel.get_unreadCount());
 
-         }
-         else holder._tv_unreadCount.setVisibility(View.GONE);
-         //-------------------------------------------------------------
-        Log.i(TAG, fileRef.toString());
-             fileRef.getDownloadUrl().addOnSuccessListener(url ->
-                     Glide.with(context).load(url)
-                             .placeholder(R.drawable.default_profile)
-                             .error(R.drawable.default_profile)
-                             .into(holder._ivProfile));
+         StorageReference fileRef = FirebaseStorage.getInstance().getReference().child(IMAGES_FOLDER).child(chatListModel.get_userId()+".ipg");
+
+         //last message and lastMessageTime
+         String lastMessage = chatListModel.get_lastMessage();
+
+         lastMessage = lastMessage.length()>30? lastMessage.substring(0, 27)+"...":lastMessage;
+
+         holder._tv_lastMessage.setText(lastMessage);
+
+         String lastMessageTime = chatListModel.get_lastMessageTime();
+
+        if(lastMessageTime==null) {lastMessageTime="";}
+
+        if(!TextUtils.isEmpty(lastMessageTime)) {
+
+            Log.i(TAG, "Message time "+ Util.getTimeAgo(Long.parseLong(lastMessageTime)));
+
+            holder._tv_LastMessageTime.setText(Util.getTimeAgo(Long.parseLong(lastMessageTime)));
+        }
+
+        Log.i(TAG,  "PhotoName" + chatListModel.get_photoName());
+        //-------------------------------------------------------------
+       if(chatListModel.get_photoName()!= null) {
+
+           fileRef.getDownloadUrl().addOnSuccessListener(url ->
+                   Glide.with(context).load(url)
+                           .placeholder(R.drawable.default_profile)
+                           .error(R.drawable.default_profile)
+                           .into(holder._ivProfile));
+
+       }
+       else {
+           holder._ivProfile.setImageResource(R.drawable.default_profile);
+       }
+        //unread count
+        if(!chatListModel.get_unreadCount().equals("0"))
+        {
+            holder._tv_unreadCount.setVisibility(View.VISIBLE);
+            holder._tv_unreadCount.setText(chatListModel.get_unreadCount());
+
+        }
+        else {
+            holder._tv_unreadCount.setVisibility(View.GONE);
+        }
 
 
          holder._llChatlist.setOnClickListener(v -> {
@@ -87,7 +119,7 @@ public class ChatListAdapter extends RecyclerView.Adapter<ChatListAdapter.ChatLi
         return chatListModelList.size();
     }
 
-    public class ChatListViewHolder extends RecyclerView.ViewHolder{
+    public static class ChatListViewHolder extends RecyclerView.ViewHolder{
 
         private LinearLayout _llChatlist;
         private TextView _tvFullName, _tv_lastMessage,_tv_LastMessageTime,_tv_unreadCount;

@@ -73,10 +73,6 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
 
-
-
-
-
         _SharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
 
         // Initialize Firebase Auth
@@ -89,6 +85,7 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
         else {
+
             FirebaseInstanceId.getInstance().getInstanceId().addOnSuccessListener(instanceIdResult -> {
                 Util.updateDeviceToken(MainActivity.this, instanceIdResult.getToken());
             });
@@ -107,6 +104,15 @@ public class MainActivity extends AppCompatActivity {
         //init UI TabLayout
         _tabLayout=findViewById(R.id.tabMain);
         _viewPager=findViewById(R.id.vpMain);
+
+
+        //Status user offline and online
+        DatabaseReference databaseReferenceUsers = FirebaseDatabase.getInstance().getReference()
+                .child(NodeNames.USERS).child(_firebaseUser.getUid());
+        databaseReferenceUsers.child(NodeNames.ONLINE).setValue(true);
+        databaseReferenceUsers.child(NodeNames.ONLINE).onDisconnect().setValue(false);
+
+
         //init Adapter and viewPager
         set_viewPager();
 

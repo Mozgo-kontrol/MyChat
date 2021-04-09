@@ -11,25 +11,49 @@
     >
 
     <com.mikhaellopez.circularimageview.CircularImageView
-        android:id="@+id/ivProfileCustoBar"
+        android:id="@+id/ivProfileCustomBar"
         android:layout_height="42dp"
         android:layout_width="42dp"
         app:civ_border="false"
         android:src="@drawable/default_profile"/>
-    <TextView
-        android:id="@+id/tvUserCustomBar"
-        android:layout_width="match_parent"
+    <LinearLayout
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_margin="8dp"
-        android:singleLine="true"
-        android:ellipsize="marquee"
-        android:fadingEdge="horizontal"
-        android:marqueeRepeatLimit="marquee_forever"
-        android:scrollHorizontally="true"
-        android:textAppearance="@style/TextAppearance.AppCompat.Medium"
-        android:textStyle="bold"
-        tools:text="User Name"
-        android:textColor="@color/white"/>
+        android:orientation="vertical"
+        android:layout_marginStart="8dp">
+        <TextView
+            android:id="@+id/tvUserCustomBar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="4dp"
+            android:singleLine="true"
+            android:ellipsize="marquee"
+            android:fadingEdge="horizontal"
+            android:marqueeRepeatLimit="marquee_forever"
+            android:scrollHorizontally="true"
+            android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+            android:textStyle="bold"
+            tools:text="User Name"
+            android:textColor="@color/white"/>
+        <TextView
+            android:id="@+id/tvUserStatus"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="4dp"
+
+            android:layout_marginBottom="4dp"
+            android:textColor="@color/white"
+            android:textAppearance="@style/TextAppearance.AppCompat.Small"
+            tools:text="Online">
+
+
+
+        </TextView>
+
+
+
+    </LinearLayout>
+
 
 
 </LinearLayout>

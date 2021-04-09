@@ -15,7 +15,6 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
-import com.google.android.gms.common.internal.Objects;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
@@ -34,6 +33,7 @@ import org.json.JSONObject;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.logging.Handler;
 
 /**
@@ -149,7 +149,7 @@ public class Util {
 
     }
 
-    public static  void updateChatDetails(Context context, String currentUserId, String chatUserId)
+    public static  void updateChatDetails(Context context, String currentUserId, String chatUserId, String lastMessage)
     {
       DatabaseReference rootRef = FirebaseDatabase.getInstance().getReference();
       DatabaseReference chatRef = rootRef.child(NodeNames.CHATS).child(chatUserId).child(currentUserId);
@@ -159,16 +159,22 @@ public class Util {
           public void onDataChange(@NonNull DataSnapshot snapshot) {
               String currentCount="0";
               if(snapshot.child(NodeNames.UNREAD_COUNT).getValue()!=null){
-                  currentCount = snapshot.child(NodeNames.UNREAD_COUNT).getValue().toString();
+                  currentCount = Objects.requireNonNull(snapshot.child(NodeNames.UNREAD_COUNT).getValue()).toString();
               }
-              Map chatMap =new HashMap();
+              Map<String, Object> chatMap =new HashMap();
               chatMap.put(NodeNames.TIME_STAMP, ServerValue.TIMESTAMP);
-              chatMap.put(NodeNames.UNREAD_COUNT,Integer.parseInt(currentCount)+1);
+              chatMap.put(NodeNames.UNREAD_COUNT,Integer.valueOf(currentCount)+1);
+              chatMap.put(NodeNames.LAST_MESSAGE, lastMessage);
+              chatMap.put(NodeNames.LAST_MESSAGE_TIME, ServerValue.TIMESTAMP);
 
-              Map chatUserMap = new HashMap();
 
-              chatUserMap.put(NodeNames.CHATS+"/"+chatUserId+"/"+currentUserId,chatMap);
-              chatRef.updateChildren(chatMap, (error, ref) -> {
+               //------------chechen---------------------------------------------------------------
+              //TODO chechen its cann be Failur
+              HashMap chatUserMap = new HashMap();
+
+              chatUserMap.put(NodeNames.CHATS+"/"+chatUserId+"/"+currentUserId, chatMap);
+              //---------------------------------------------------------------------------
+              rootRef.updateChildren(chatUserMap, (error, ref) -> {
                   if(error!=null){
                       Toast.makeText(context, context.getString(R.string.something_went_wrong,error.getMessage()), Toast.LENGTH_SHORT).show();
                   }
@@ -181,7 +187,54 @@ public class Util {
           }
       });
 
+    }
 
+    public static String getTimeAgo(long time)
+    {
+        final int SECOND_MILLS = 1000;
+        final int MINUTE_MILLIS = 60 * SECOND_MILLS;
+        final int HOUR_MILLIS = 60 * MINUTE_MILLIS;
+        final int DAY_MILLIS = 24 * HOUR_MILLIS;
+       // time *= 1000;
+
+        long now = System.currentTimeMillis();
+        if(time <= 0)
+        {
+
+          return "";
+        }
+
+        final long diff = now - time;
+        Log.i(TAG, "Diff :"+ diff);
+
+        if(diff < MINUTE_MILLIS)
+        {
+            return "just now";
+        }
+        else if(diff < 2 * MINUTE_MILLIS)
+        {
+            return "one minute ago";
+        }
+        else if(diff < 59*MINUTE_MILLIS)
+        {
+            return diff/MINUTE_MILLIS+ " minutes ago";
+        }
+        else if (diff > 90 * MINUTE_MILLIS)
+        {
+           return "an hour ago";
+        }
+        else if (diff < 24 * HOUR_MILLIS)
+        {
+            return diff/HOUR_MILLIS +  " hours ago";
+        }
+        else if (diff < 48 * HOUR_MILLIS)
+        {
+            return "yesterday";
+        }
+        else {
+
+            return diff/DAY_MILLIS+ " days ago";
+        }
     }
 
 

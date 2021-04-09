@@ -45,4 +45,7 @@ public class NodeNames {
     public static final String DEVICE_TOKEN = "device_token";
 
     public static final String UNREAD_COUNT = "unread_count";
+    public static final String LAST_MESSAGE = "last_message";
+    public static final String LAST_MESSAGE_TIME = "last_message_time";
+    public static final String TYPING = "typing";
 }

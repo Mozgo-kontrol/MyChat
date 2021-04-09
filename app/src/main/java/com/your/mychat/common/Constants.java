@@ -26,4 +26,11 @@ public class Constants {
     public static final String CHANNEL_DESC = "Chat_App_notifications";
 
 
+    public static final String STATUS_ONLINE = "online";
+    public static final String STATUS_OFFLINE = "offline";
+    public static final String STATUS_TYPING = "typing...";
+
+    public static final Object TYPING_STARTED=  "1";
+    public static final Object TYPING_STOPPED =  "0";
+
 }

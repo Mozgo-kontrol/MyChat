@@ -21,7 +21,9 @@ import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.provider.SyncStateContract;
+import android.text.Editable;
 import android.text.TextUtils;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
@@ -50,6 +52,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.ServerValue;
+import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.database.snapshot.Node;
 import com.google.firebase.storage.FileDownloadTask;
 import com.google.firebase.storage.FirebaseStorage;
@@ -71,13 +74,14 @@ import java.util.HashMap;
 import java.util.List;
 
 import static android.provider.MediaStore.ACTION_IMAGE_CAPTURE;
+import static com.your.mychat.common.Constants.IMAGES_FOLDER;
 
 public class ChatActivity extends AppCompatActivity implements View.OnClickListener {
 
     private final String  TAG = "ChatActivity";
 
     private ImageView _ivSend, _ivAttachment, _ivProfile;
-    private TextView _tvUserName;
+    private TextView _tvUserName, _vtUserStatus;
 
     private EditText _etMessage;
     private DatabaseReference _mRootRef;
@@ -127,8 +131,8 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
         ActionBar actionBar = getSupportActionBar();
         if(actionBar!=null){
             actionBar.setTitle("");
-            View actionBarLayout =(ViewGroup)getLayoutInflater().inflate(R.layout.custom_actionbar,null);
 
+            View actionBarLayout =(ViewGroup)getLayoutInflater().inflate(R.layout.custom_actionbar,null);
             actionBar.setDisplayHomeAsUpEnabled(true);
             actionBar.setHomeButtonEnabled(true);
             actionBar.setElevation(0);
@@ -139,7 +143,8 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
         //------------------------------------------------
         //customBar
         _tvUserName=findViewById(R.id.tvUserCustomBar);
-        _ivProfile=findViewById(R.id.ivProfileCustoBar);
+        _ivProfile = findViewById(R.id.ivProfileCustomBar);
+        _vtUserStatus=findViewById(R.id.tvUserStatus);
         //------------------------------------------------
 
         _ivSend.setOnClickListener(this);
@@ -163,16 +168,20 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
         if(getIntent().hasExtra(Extras.USER_NAME)){
             _userName=getIntent().getStringExtra(Extras.USER_NAME);
         }
-        if(getIntent().hasExtra(Extras.USER_NAME)){
+        if(getIntent().hasExtra(Extras.PHOTO_NAME)){
             _photoName=getIntent().getStringExtra(Extras.PHOTO_NAME);
         }
         _tvUserName.setText(_userName);
 
-         //if photoname is not empty
-        if(!TextUtils.isEmpty(_photoName)) {
-            StorageReference photoRef = FirebaseStorage.getInstance().getReference().child(Constants.IMAGES_FOLDER).child(_photoName);
-            photoRef.getDownloadUrl().addOnSuccessListener(uri -> {
 
+         //if photoName is not empty
+        if(!TextUtils.isEmpty(_photoName)) {
+
+            Log.i(TAG, _photoName);
+            StorageReference photoRef =FirebaseStorage.getInstance().getReference().child(IMAGES_FOLDER).child(_chatUserId+".ipg");
+            Log.i(TAG, String.valueOf(photoRef));
+
+            photoRef.getDownloadUrl().addOnSuccessListener(uri -> {
                 Glide.with(ChatActivity.this)
                         .load(uri)
                         .placeholder(R.drawable.default_profile)
@@ -181,8 +190,8 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
             });
         }
 
-        _rvMessages=findViewById(R.id.rvMessages);
-        _srlMessages=findViewById(R.id.srl_messages);
+         _rvMessages=findViewById(R.id.rvMessages);
+         _srlMessages=findViewById(R.id.srl_messages);
          _messagesModelList =new ArrayList<>();
          _messagesAdapter =new MessagesAdapter(this, _messagesModelList);
          _rvMessages.setLayoutManager(new LinearLayoutManager(this));
@@ -190,10 +199,12 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
 
 
 
+
          loadMessages();
-         //update unread count
-         _mRootRef.child(NodeNames.CHATS).child(_currentUserId).child(_chatUserId).child(NodeNames.UNREAD_COUNT).setValue(0);
-         //----------------------------------------------------------------------------------------
+
+        //update unread count
+        _mRootRef.child(NodeNames.CHATS).child(_currentUserId).child(_chatUserId).child(NodeNames.UNREAD_COUNT).setValue(0);
+        //----------------------------------------------------------------------------------------
 
          _rvMessages.scrollToPosition(_messagesModelList.size()-1);
         _srlMessages.setOnRefreshListener(() -> {
@@ -231,6 +242,8 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
             //we need new Message id
             DatabaseReference messageRef =_mRootRef.child(NodeNames.MESSAGES).child(_currentUserId).child(_chatUserId).push();
             String newMessageId = messageRef.getKey();
+
+
             if(selectedMessageType.equals(Constants.MESSAGE_TYPE_TEXT)) {
                 sendMessage(selectedMessage, selectedMessageType, newMessageId);
             }
@@ -256,6 +269,74 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
 
 
         }
+        //user Online or Offline
+        DatabaseReference databaseReference =_mRootRef.child(NodeNames.USERS).child(_chatUserId);
+        databaseReference.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                String status ="";
+                if(snapshot.child(NodeNames.ONLINE).getValue()!=null){
+
+                    status = snapshot.child(NodeNames.ONLINE).getValue().toString();
+                    if(status.equals("true")){
+                        _vtUserStatus.setText(Constants.STATUS_ONLINE);
+                    }
+                    else _vtUserStatus.setText(Constants.STATUS_OFFLINE);
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Log.e(TAG, getString(R.string.failed_to_update_user_status ,error.getMessage()));
+            }
+        });
+        // write if  current user typing or not
+        _etMessage.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                   DatabaseReference currentUserRef = _mRootRef.child(NodeNames.CHATS)
+                           .child(_currentUserId)
+                           .child(_chatUserId);
+                   if(s.toString().matches(""))
+                   {
+                       currentUserRef.child(NodeNames.TYPING).setValue(Constants.TYPING_STOPPED);
+                   }
+                else {currentUserRef.child(NodeNames.TYPING).setValue(Constants.TYPING_STARTED);}
+
+            }
+        });
+         //read if chat user typing or not
+        DatabaseReference chatUserRef =_mRootRef.child(NodeNames.CHATS).child(_chatUserId).child(_currentUserId);
+        chatUserRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if(snapshot.child(NodeNames.TYPING).getValue()!=null){
+
+                    String typingStatus = snapshot.child(NodeNames.TYPING).getValue().toString();
+                    if(typingStatus.equals(Constants.TYPING_STARTED)){
+
+                        _vtUserStatus.setText(Constants.STATUS_TYPING);
+                    }
+                    else  _vtUserStatus.setText(Constants.STATUS_ONLINE);
+
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Log.e(TAG, getString(R.string.failed_to_update_user_status ,error.getMessage()));
+            }
+        });
 
     }
 
@@ -274,6 +355,7 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
         return super.onOptionsItemSelected(item);
 
     }
+
 
     @SuppressLint("NonConstantResourceId")
     @Override
@@ -513,11 +595,12 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
                                 getString(R.string.failed_to_send_message, error.getMessage()),
                                 Toast.LENGTH_SHORT).show();
                     }
-                    else  {Toast.makeText(ChatActivity.this,
+                    else  {
+                        Toast.makeText(ChatActivity.this,
                             getString(R.string.send_succesfully), Toast.LENGTH_SHORT).show();
 
                         //Send  Notification about friend Request Accepted
-                        String title = "New";
+                        String title = "";
                         if(msgType.equals(Constants.MESSAGE_TYPE_TEXT))
                          {
                              title = "New Message";
@@ -532,11 +615,13 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
                         {
                                title = "New Video";
                         }
-
-                        Util.sendNotification(ChatActivity.this, title, msg, _chatUserId, _currentUserId);
+                      Util.sendNotification(ChatActivity.this, title, msg, _chatUserId, _currentUserId);
                         //---------------------------------------------------------
                         //increment unread message
-                        Util.updateChatDetails(ChatActivity.this, _currentUserId, _chatUserId);
+                        //last message
+                        String lastMessage = !title.equals("New Message")? title:msg;
+
+                        Util.updateChatDetails(ChatActivity.this, _currentUserId, _chatUserId, lastMessage);
                     }
                 });
 
@@ -547,6 +632,7 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
             Toast.makeText(ChatActivity.this,
                     getString(R.string.failed_to_send_message, ex.getMessage()),
                     Toast.LENGTH_SHORT).show();
+            Log.e(TAG,"SendMessage"+ ex.getMessage());
 
         }
 
@@ -563,7 +649,7 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
             messageQuery.removeEventListener(childEventListener);
         }
 
-             childEventListener =new ChildEventListener() {
+             childEventListener = new ChildEventListener() {
                  @Override
                  public void onChildAdded(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
                      MessageModel message = snapshot.getValue(MessageModel.class);
@@ -573,23 +659,26 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
 
                      _rvMessages.scrollToPosition(_messagesModelList.size()-1);
 
-                        _srlMessages.setRefreshing(false);
+                     _srlMessages.setRefreshing(false);
 
                  }
 
                  @Override
-                 public void onChildChanged(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
-
+                 public void onChildChanged(@NonNull DataSnapshot snapshot, @Nullable String previousChildName)
+                 {
+                         loadMessages();
                  }
 
                  @Override
-                 public void onChildRemoved(@NonNull DataSnapshot snapshot) {
-                                loadMessages();
+                 public void onChildRemoved(@NonNull DataSnapshot snapshot)
+                 {
+                     loadMessages();
                  }
 
                  @Override
-                 public void onChildMoved(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
-                                loadMessages();
+                 public void onChildMoved(@NonNull DataSnapshot snapshot, @Nullable String previousChildName)
+                 {
+                       loadMessages();
                  }
 
                  @Override
@@ -765,7 +854,6 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
         //reset unread count
         _mRootRef.child(NodeNames.CHATS).child(_currentUserId).child(_chatUserId).child(NodeNames.UNREAD_COUNT).setValue(0);
         //----------------------------------------------------------------------------------------
-
         super.onBackPressed();
     }
 }

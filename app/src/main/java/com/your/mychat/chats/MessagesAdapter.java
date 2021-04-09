@@ -30,13 +30,15 @@ import com.your.mychat.R;
 import com.your.mychat.common.Constants;
 import com.your.mychat.selectfriend.SelectFriendActivity;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 
 
 public class MessagesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>{
-
+    private final String  TAG = "MessagesAdapter";
     private static final int VIEW_TYPE_DATE = 4;
     private static final int VIEW_TYPE_ITEM_SENDER = 0;
     private Context context;
@@ -77,6 +79,7 @@ public class MessagesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
 
 
     }
+
 
 
     @Override
@@ -137,21 +140,17 @@ public class MessagesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
                     {
                         ((MessageViewHolder) holder).llSent.setVisibility(View.GONE);
                         ((MessageViewHolder) holder).llSentImage.setVisibility(View.VISIBLE);
-
+                        Glide.with(context)
+                                .load(message.getMessage())
+                                .placeholder(R.drawable.ic_image)
+                                .into(((MessageViewHolder) holder).ivSentImage);
                     }
                         ((MessageViewHolder) holder).llReceived.setVisibility(View.GONE);
                         ((MessageViewHolder) holder).llReceivedImage.setVisibility(View.GONE);
-
-
-
                         ((MessageViewHolder) holder).tvSentMessage.setText(message.getMessage());
                         ((MessageViewHolder) holder).tvSentMessageTime.setText(messageTime);
                         ((MessageViewHolder) holder).tvSentImageTime.setText(messageTime);
 
-                        Glide.with(context)
-                             .load(message.getMessage())
-                             .placeholder(R.drawable.ic_image)
-                             .into(((MessageViewHolder) holder).ivSentImage);
 
             }
             else
@@ -165,6 +164,10 @@ public class MessagesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
                     {
                         ((MessageViewHolder) holder).llReceived.setVisibility(View.GONE);
                         ((MessageViewHolder) holder).llReceivedImage.setVisibility(View.VISIBLE);
+                        Glide.with(context)
+                                .load(message.getMessage())
+                                .placeholder(R.drawable.ic_image)
+                                .into(((MessageViewHolder) holder).ivReceivedImage);
                     }
 
                     ((MessageViewHolder) holder).llSent.setVisibility(View.GONE);
@@ -176,10 +179,6 @@ public class MessagesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
 
                     ((MessageViewHolder) holder).tvReceivedImageTime.setText(messageTime);
 
-                    Glide.with(context)
-                            .load(message.getMessage())
-                            .placeholder(R.drawable.ic_image)
-                            .into(((MessageViewHolder) holder).ivReceivedImage);
                 }
 
             ((MessageViewHolder) holder).clMessage.setTag(R.id.TAG_MESSAGE,message.getMessage());
@@ -187,8 +186,11 @@ public class MessagesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
             ((MessageViewHolder) holder).clMessage.setTag(R.id.TAG_MESSAGE_TYPE,message.getMessageType());
 
             ((MessageViewHolder) holder).clMessage.setOnClickListener(v -> {
+
                 String messageType =v.getTag(R.id.TAG_MESSAGE_TYPE).toString();
+
                 Uri uri = Uri.parse(v.getTag(R.id.TAG_MESSAGE).toString());
+
                 if(messageType.equals(Constants.MESSAGE_TYPE_VIDEO))
                 {
                     Intent intent = new Intent(Intent.ACTION_VIEW,uri);
@@ -208,16 +210,17 @@ public class MessagesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
                     return false;
                 }
                 //this layout ist to access tagMessage, messageId, messageType
+
                 _selectedView=((MessageViewHolder) holder).clMessage;
 
                 actionMode=((AppCompatActivity)context).startSupportActionMode(actionModeCallback);
+
                 ((MessageViewHolder) holder).clMessage.setBackgroundColor(context.getResources().getColor(R.color.orange));
 
                 return true;
 
             });
         }
-
 
     }
 
@@ -254,7 +257,7 @@ public class MessagesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         }
     }
     //support menu
-    public ActionMode.Callback actionModeCallback= new ActionMode.Callback() {
+    public ActionMode.Callback actionModeCallback = new ActionMode.Callback() {
         @Override
         public boolean onCreateActionMode(ActionMode mode, Menu menu) {
             MenuInflater inflater = mode.getMenuInflater();
@@ -264,17 +267,16 @@ public class MessagesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
           String selectedMessageType = String.valueOf(_selectedView.getTag(R.id.TAG_MESSAGE_TYPE));
           if(selectedMessageType.equals(Constants.MESSAGE_TYPE_TEXT)){
 
-            MenuItem itemDownload =menu.findItem(R.id.uDownload);
+            MenuItem itemDownload = menu.findItem(R.id.uDownload);
             itemDownload.setVisible(false);
           }
           //---------------------------------------------------------------------------------------
-
-
             return true;
         }
 
         @Override
         public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
+
             return false;
         }
 
@@ -293,17 +295,17 @@ public class MessagesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
                      if(context instanceof ChatActivity){
 
                         ((ChatActivity) context).deleteMessage(selectedMessageId, selectedMessageType);
-
+                        // _selectedView.setBackgroundColor(context.getResources().getColor(R.color.chat_background));
+                         actionMode.finish();
                      }
-                    //Toast.makeText(context, "Delete Option Clicked", Toast.LENGTH_SHORT).show();
-                    actionMode.finish();
-                    break;
-                case R.id.uDownload:
+                    return true;
 
+
+                case R.id.uDownload:
                     ((ChatActivity) context).downloadFile(selectedMessageId, selectedMessageType, false);
-                    //Toast.makeText(context, "Download Option Clicked", Toast.LENGTH_SHORT).show();
+
                     actionMode.finish();
-                    break;
+                    return true;
                 case R.id.mnuForward:
 
                    if(context instanceof ChatActivity){
@@ -311,12 +313,9 @@ public class MessagesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
                        ((ChatActivity) context).forwardMessage(selectedMessageId, selectedMessage, selectedMessageType);
                    }
 
-
-
-                    //context.startActivity(new Intent(context, SelectFriendActivity.class));
-                   // Toast.makeText(context, "Forward Option Clicked", Toast.LENGTH_SHORT).show();
                     actionMode.finish();
-                    break;
+
+                    return true;
                 case R.id.mnuShare:
                       if(selectedMessageType.equals(Constants.MESSAGE_TYPE_TEXT))
                       {
@@ -333,21 +332,21 @@ public class MessagesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
                       }
                    // Toast.makeText(context, "Share Option Clicked", Toast.LENGTH_SHORT).show();
                     actionMode.finish();
-                    break;
-
+                    return true;
+                default:
+                    return false;
             }
-            return false;
         }
 
         @Override
         public void onDestroyActionMode(ActionMode mode) {
 
-           mode=null;
-           _selectedView.setBackgroundColor(context.getResources().getColor(R.color.chat_background));
+           mode = null;
+          _selectedView.setBackgroundColor(context.getResources().getColor(R.color.chat_background));
         }
     };
 
-    public class DateViewHolder extends RecyclerView.ViewHolder {
+    public static class DateViewHolder extends RecyclerView.ViewHolder {
         public TextView date;
 
         public DateViewHolder(View view) {

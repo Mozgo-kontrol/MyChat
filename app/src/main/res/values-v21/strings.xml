@@ -84,6 +84,7 @@
     <string name="failed_to_save_device_token">Failed to save device token</string>
     <string name="notification_sent">Notification Sent</string>
     <string name="failed_to_sent_notification">Failed to send notification : %1$s</string>
+    <string name="failed_to_update_user_status">Failed to udate User status, %1$s</string>
 
 
 </resources>
